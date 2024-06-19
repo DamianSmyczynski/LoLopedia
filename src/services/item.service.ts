@@ -27,9 +27,9 @@ export class ItemsService {
 
   public async getItemDetails(
     language: string,
-    itemName: string,
+    itemId: string,
   ): Promise<ItemDto> {
-    const item = await this.riotRepository.getItemDetails(language, itemName);
+    const item = await this.riotRepository.getItemDetails(language, itemId);
 
     const newestPatch = await this.httpRiotService.getNewestPatch();
 

@@ -19,8 +19,8 @@ export class ItemController {
   @Get(':item')
   async getItemDetails(
     @Param('language') language: string,
-    @Param('item') itemName: string,
+    @Param('item') itemId: string,
   ): Promise<ItemDto> {
-    return await this.itemsService.getItemDetails(language, itemName);
+    return await this.itemsService.getItemDetails(language, itemId);
   }
 }

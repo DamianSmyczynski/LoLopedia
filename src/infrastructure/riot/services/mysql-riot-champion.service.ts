@@ -7,6 +7,7 @@ import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
 import { ChampionEntityToBasicChampionDtoMapper } from 'src/mappers/champion-entity-to-basic-champion-dto.mapper';
 import { ChampionEntityToChampionDtoMapper } from 'src/mappers/champion-entity-to-champion-dto.mapper';
 import { ChampionDtoToChampionEntityMapper } from 'src/mappers/champion-dto-to-champion-entity.mapper';
+import { ChampionNotFoundError } from 'src/errors/champion-not-found.error';
 
 @Injectable()
 export class MySqlRiotChampionService
@@ -35,6 +36,10 @@ export class MySqlRiotChampionService
       id: championName,
       language: language,
     });
+
+    if (!champion) {
+      throw new ChampionNotFoundError(championName);
+    }
 
     const championDetails = ChampionEntityToChampionDtoMapper.map(champion);
 

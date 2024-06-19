@@ -1,5 +1,13 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
+import { ErrorMapper } from 'src/custom-decorator.decorator';
 import { ChampionsService } from 'src/services/champion.service';
 
 @Controller('api/:language/champions')
@@ -19,6 +27,7 @@ export class ChampionController {
   }
 
   @Get(':champion')
+  @ErrorMapper()
   async getChampionDetails(
     @Param('language') language: string,
     @Param('champion') championName: string,
