@@ -1,24 +1,27 @@
 import { Image } from 'src/image.type';
 
 export type BasicItemDto = {
+  version: string;
   id: string;
   name: string;
+  category?: string;
 };
 
 export type ItemDto = BasicItemDto & {
-  version: string;
   language: string;
   description: string;
   colloq: string;
-  from?: string[];
-  into?: string[];
   image: Image;
   gold: ItemGold;
   tags: string[];
   maps: RiotMap;
   inStore: boolean;
-  category?: string;
   depth: number;
+  plaintext: string;
+  stats: ItemStat[];
+  from?: string[];
+  into?: string[];
+  requiredChampion?: string;
 };
 
 export type ItemGold = {
@@ -34,4 +37,9 @@ export type RiotMap = {
   21: boolean;
   22: boolean;
   30: boolean;
+};
+
+export type ItemStat = {
+  name: string;
+  value: number;
 };

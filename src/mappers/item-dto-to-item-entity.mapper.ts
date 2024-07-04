@@ -14,6 +14,8 @@ export class ItemDtoToItemEntityMapper {
       image: item.image,
       gold: item.gold,
       tags: item.tags,
+      stats: item.stats,
+      plaintext: item.plaintext,
     });
   }
 }

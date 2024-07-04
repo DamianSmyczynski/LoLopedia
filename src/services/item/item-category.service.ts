@@ -1,58 +1,15 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { AppSymbol } from 'src/app.symbol';
-import { HttpRiotService } from 'src/infrastructure/riot/http-riot.service';
-import { RiotItemRepositoryInterface } from 'src/infrastructure/riot/interfaces/riot-item-repository.interface';
+import { ItemDto } from 'src/items/item.dto';
 import { ItemCategory } from 'src/item-categories-enum';
 import { ItemsCategoryExceptions } from 'src/items-category-exceptions';
-import { ItemDto } from 'src/items/item.dto';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class ItemsService {
-  constructor(
-    @Inject(AppSymbol.RiotItemRepository)
-    private readonly riotRepository: RiotItemRepositoryInterface,
-    private readonly httpRiotService: HttpRiotService,
-  ) {}
-
-  public async updateItemsData(language: string) {
-    const items = await this.httpRiotService.getAllItems(language);
-    const filteredItems = this.filterFetchedItems(items);
-    const categorizedItems = this.categorizeItems(filteredItems);
-    await this.riotRepository.updateAllItems(language, categorizedItems);
-  }
-
-  public async getAllItems(language: string): Promise<ItemDto[]> {
-    return this.riotRepository.getAllItems(language);
-  }
-
-  public async getItemDetails(
-    language: string,
-    itemId: string,
-  ): Promise<ItemDto> {
-    const item = await this.riotRepository.getItemDetails(language, itemId);
-
-    const newestPatch = await this.httpRiotService.getNewestPatch();
-
-    if (item.version !== newestPatch) {
-      try {
-        await this.updateItemsData(language);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    return item;
-  }
-
-  private filterFetchedItems(items: ItemDto[]): ItemDto[] {
-    const availableItems = items.filter((item) => item.inStore);
-    return availableItems.filter(
-      (item) => item.id.length <= 5 && item.maps['11'] === true,
-    );
-  }
-
-  private categorizeItems(items: ItemDto[]): ItemDto[] {
+export class ItemCategoryService {
+  public categorizeItems(items: ItemDto[]): ItemDto[] {
     const categorizedItems = items.map((item) => {
-      if (this.isConsumableItem(item)) {
+      if (item.requiredChampion) {
+        item.category = ItemCategory.Other;
+      } else if (this.isConsumableItem(item)) {
         item.category = ItemCategory.Consumable;
       } else if (this.isTrinketItem(item)) {
         item.category = ItemCategory.Trinket;
@@ -64,7 +21,9 @@ export class ItemsService {
         item.category = ItemCategory.Basic;
       } else if (this.isLegendaryItem(item)) {
         item.category = ItemCategory.Legendary;
-      } else item.category = ItemCategory.Epic;
+      } else {
+        item.category = ItemCategory.Epic;
+      }
       return item;
     });
 

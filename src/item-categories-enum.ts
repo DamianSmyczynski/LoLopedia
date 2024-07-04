@@ -1,9 +1,10 @@
 export enum ItemCategory {
-  Starter = 'Starter',
-  Consumable = 'Consumable',
-  Trinket = 'Trinket',
-  Boots = 'Boots',
   Basic = 'Basic',
+  Boots = 'Boots',
+  Consumable = 'Consumable',
   Epic = 'Epic',
   Legendary = 'Legendary',
+  Other = 'Other',
+  Starter = 'Starter',
+  Trinket = 'Trinket',
 }

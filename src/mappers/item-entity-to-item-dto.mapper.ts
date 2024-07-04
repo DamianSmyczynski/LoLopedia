@@ -19,6 +19,9 @@ export class ItemEntityToItemDtoMapper {
       category: item.category,
       inStore: item.inStore,
       depth: item.depth,
+      requiredChampion: item.requiredChampion,
+      plaintext: item.plaintext,
+      stats: item.stats,
     };
   }
 }

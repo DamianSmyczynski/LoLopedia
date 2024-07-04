@@ -13,7 +13,11 @@ import { ChampionController } from './controllers/champion.controller';
 import { MySqlRiotItemService } from './infrastructure/riot/services/mysql-riot-item.service';
 import { ItemEntity } from './items/item.entity';
 import { ItemController } from './controllers/item.controller';
-import { ItemsService } from './services/item.service';
+import { ItemService } from './services/item/item.service';
+import { ItemBuildTreeService } from './services/item/item-build-tree.service';
+import { ItemCategoryService } from './services/item/item-category.service';
+import { ItemFilterService } from './services/item/item-filter.service';
+import { ItemStatsService } from './services/item/item-stats.service';
 
 @Module({
   imports: [
@@ -38,7 +42,11 @@ import { ItemsService } from './services/item.service';
     AppService,
     HttpRiotService,
     ChampionsService,
-    ItemsService,
+    ItemService,
+    ItemBuildTreeService,
+    ItemCategoryService,
+    ItemFilterService,
+    ItemStatsService,
     {
       provide: AppSymbol.RiotChampionRepository,
       useClass: MySqlRiotChampionService,

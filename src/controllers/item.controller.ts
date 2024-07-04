@@ -1,10 +1,10 @@
 import { Controller, Post, Param, Get } from '@nestjs/common';
 import { ItemDto } from 'src/items/item.dto';
-import { ItemsService } from 'src/services/item.service';
+import { ItemService } from 'src/services/item/item.service';
 
 @Controller('api/:language/items')
 export class ItemController {
-  constructor(private readonly itemsService: ItemsService) {}
+  constructor(private readonly itemsService: ItemService) {}
 
   @Post('update-items-data')
   async updateItemsData(@Param('language') language: string) {
@@ -22,5 +22,13 @@ export class ItemController {
     @Param('item') itemId: string,
   ): Promise<ItemDto> {
     return await this.itemsService.getItemDetails(language, itemId);
+  }
+
+  @Get(':item/build-tree')
+  async getItemBuildTree(
+    @Param('language') language: string,
+    @Param('item') itemId: string,
+  ): Promise<any[]> {
+    return await this.itemsService.getItemBuildTree(language, itemId);
   }
 }

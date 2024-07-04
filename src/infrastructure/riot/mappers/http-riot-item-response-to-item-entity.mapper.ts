@@ -1,5 +1,4 @@
-import { Image } from 'src/image.type';
-import { ItemDto, ItemGold } from 'src/items/item.dto';
+import { ItemDto } from 'src/items/item.dto';
 
 export class HttpRiotItemResponseToItemDtoMapper {
   public static map(
@@ -23,6 +22,11 @@ export class HttpRiotItemResponseToItemDtoMapper {
       maps: item.maps,
       inStore: item.inStore !== undefined ? item.inStore : true,
       depth: item.depth,
+      requiredChampion:
+        item.requiredChampion !== undefined ? item.requiredChampion : null,
+      plaintext: item.plaintext,
+      stats: item.stats,
+      category: item.category,
     };
   }
 }

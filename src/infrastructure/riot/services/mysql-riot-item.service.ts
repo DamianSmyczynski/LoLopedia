@@ -7,7 +7,6 @@ import { RiotItemRepositoryInterface } from '../interfaces/riot-item-repository.
 import { ItemEntityToItemDtoMapper } from 'src/mappers/item-entity-to-item-dto.mapper';
 import { ItemDtoToItemEntityMapper } from 'src/mappers/item-dto-to-item-entity.mapper';
 import { ItemEntityToBasicItemDtoMapper } from 'src/mappers/item-entity-to-basic-item-dto.mapper';
-import { NotFoundError } from 'rxjs';
 import { ItemNotFoundError } from 'src/errors/item-not-found.error';
 
 @Injectable()

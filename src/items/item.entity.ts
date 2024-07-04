@@ -57,4 +57,13 @@ export class ItemEntity extends BaseEntity {
 
   @Column({ default: null })
   depth: number;
+
+  @Column({ default: null })
+  requiredChampion: string;
+
+  @Column('simple-json')
+  stats: { name: string; value: number }[];
+
+  @Column()
+  plaintext: string;
 }

@@ -1,4 +1,4 @@
-import { ErrorToApiErrorMapper } from './controllers/mappers/error-to-api-error.mapper';
+import { ErrorToApiErrorMapper } from '../controllers/mappers/error-to-api-error.mapper';
 
 export const ErrorMapper = () => {
   return (
@@ -9,7 +9,8 @@ export const ErrorMapper = () => {
     const originalMethod = descriptor.value;
     descriptor.value = async function (...args) {
       try {
-        await originalMethod.apply(this, args);
+        const result = originalMethod.apply(this, args);
+        return result;
       } catch (error) {
         ErrorToApiErrorMapper.map(error);
       }
