@@ -4,6 +4,7 @@ import 'dotenv/config';
 import { HttpRiotService } from 'src/infrastructure/riot/http-riot.service';
 import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
 import { RiotChampionRepositoryInterface } from 'src/infrastructure/riot/interfaces/riot-champion-repository.interface';
+
 @Injectable()
 export class ChampionsService {
   constructor(
@@ -21,11 +22,11 @@ export class ChampionsService {
     return this.riotRepository.getAllChampions(language);
   }
 
-  public async getChampionDetails(
+  public async getChampionDetailsByName(
     language: string,
     championName: string,
   ): Promise<ChampionDto> {
-    const champion = await this.riotRepository.getChampionDetails(
+    const champion = await this.riotRepository.getChampionDetailsByName(
       language,
       championName,
     );
@@ -33,10 +34,11 @@ export class ChampionsService {
     const newestPatch = await this.httpRiotService.getNewestPatch();
 
     if (champion.version !== newestPatch || champion.lore === '1') {
-      const championDetails = await this.httpRiotService.getChampionDetails(
-        language,
-        championName,
-      );
+      const championDetails =
+        await this.httpRiotService.getChampionDetailsByName(
+          language,
+          championName,
+        );
 
       try {
         await this.riotRepository.saveChampion(language, championDetails);

@@ -4,9 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChampionEntity } from 'src/champions/champion.entity';
 import { Repository } from 'typeorm';
 import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
-import { ChampionEntityToBasicChampionDtoMapper } from 'src/mappers/champion-entity-to-basic-champion-dto.mapper';
-import { ChampionEntityToChampionDtoMapper } from 'src/mappers/champion-entity-to-champion-dto.mapper';
-import { ChampionDtoToChampionEntityMapper } from 'src/mappers/champion-dto-to-champion-entity.mapper';
+import { ChampionEntityToBasicChampionDtoMapper } from 'src/mappers/champion/champion-entity-to-basic-champion-dto.mapper';
+import { ChampionEntityToChampionDtoMapper } from 'src/mappers/champion/champion-entity-to-champion-dto.mapper';
+import { ChampionDtoToChampionEntityMapper } from 'src/mappers/item/champion-dto-to-champion-entity.mapper';
 import { ChampionNotFoundError } from 'src/errors/champion-not-found.error';
 
 @Injectable()
@@ -28,7 +28,25 @@ export class MySqlRiotChampionService
     return champions;
   }
 
-  public async getChampionDetails(
+  public async getChampionDetailsById(
+    language: string,
+    championId: string,
+  ): Promise<ChampionDto> {
+    const champion: ChampionEntity = await this.championRepository.findOneBy({
+      key: championId,
+      language: language,
+    });
+
+    if (!champion) {
+      throw new ChampionNotFoundError(championId);
+    }
+
+    const championDetails = ChampionEntityToChampionDtoMapper.map(champion);
+
+    return championDetails;
+  }
+
+  public async getChampionDetailsByName(
     language: string,
     championName: string,
   ): Promise<ChampionDto> {

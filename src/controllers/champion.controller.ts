@@ -1,7 +1,7 @@
 import { Controller, Get, Param, Post } from '@nestjs/common';
 import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
-import { ErrorMapper } from 'src/decorators/custom-decorator.decorator';
-import { ChampionsService } from 'src/services/champion.service';
+import { ErrorMapper } from 'src/decorators/error-mapper.decorator';
+import { ChampionsService } from 'src/services/champion/champion.service';
 
 @Controller('api/:language/champions')
 export class ChampionController {
@@ -21,10 +21,13 @@ export class ChampionController {
 
   @Get(':champion')
   @ErrorMapper()
-  async getChampionDetails(
+  async getChampionDetailsByName(
     @Param('language') language: string,
     @Param('champion') championName: string,
   ): Promise<ChampionDto> {
-    return this.championsService.getChampionDetails(language, championName);
+    return this.championsService.getChampionDetailsByName(
+      language,
+      championName,
+    );
   }
 }

@@ -4,9 +4,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BasicItemDto, ItemDto } from 'src/items/item.dto';
 import { RiotItemRepositoryInterface } from '../interfaces/riot-item-repository.interface';
-import { ItemEntityToItemDtoMapper } from 'src/mappers/item-entity-to-item-dto.mapper';
-import { ItemDtoToItemEntityMapper } from 'src/mappers/item-dto-to-item-entity.mapper';
-import { ItemEntityToBasicItemDtoMapper } from 'src/mappers/item-entity-to-basic-item-dto.mapper';
+import { ItemEntityToItemDtoMapper } from 'src/mappers/item/item-entity-to-item-dto.mapper';
+import { ItemDtoToItemEntityMapper } from 'src/mappers/item/item-dto-to-item-entity.mapper';
+import { ItemEntityToBasicItemDtoMapper } from 'src/mappers/item/item-entity-to-basic-item-dto.mapper';
 import { ItemNotFoundError } from 'src/errors/item-not-found.error';
 
 @Injectable()
