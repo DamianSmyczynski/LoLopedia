@@ -1,12 +1,13 @@
 import { Injectable, Inject, forwardRef } from '@nestjs/common';
-import { AppSymbol } from 'src/app.symbol';
-import { HttpRiotService } from 'src/infrastructure/riot/http-riot.service';
-import { RiotItemRepositoryInterface } from 'src/infrastructure/riot/interfaces/riot-item-repository.interface';
-import { ItemDto } from 'src/items/item.dto';
+import { HttpRiotService } from '../../infrastructure/riot/http-riot.service';
+import { RiotItemRepositoryInterface } from '../../infrastructure/riot/interfaces/riot-item-repository.interface';
+import { ItemDto } from '../../items/item.dto';
 import { ItemFilterService } from './item-filter.service';
 import { ItemCategoryService } from './item-category.service';
 import { ItemStatsService } from './item-stats.service';
 import { ItemBuildTreeService } from './item-build-tree.service';
+import { PatchVersionService } from '../patch-version/patch-version.service';
+import { AppSymbol } from '../../app.symbol';
 
 @Injectable()
 export class ItemService {
@@ -14,6 +15,7 @@ export class ItemService {
     @Inject(AppSymbol.RiotItemRepository)
     private readonly riotRepository: RiotItemRepositoryInterface,
     private readonly httpRiotService: HttpRiotService,
+    private readonly patchVersionService: PatchVersionService,
     private readonly filterService: ItemFilterService,
     private readonly categoryService: ItemCategoryService,
     private readonly statsService: ItemStatsService,
@@ -22,7 +24,9 @@ export class ItemService {
   ) {}
 
   public async updateItemsData(language: string) {
-    const items = await this.httpRiotService.getAllItems(language);
+    const newestPatch = await this.patchVersionService.getNewest();
+
+    const items = await this.httpRiotService.getAllItems(language, newestPatch);
 
     const filteredItems = this.filterService.filterItemsByAvailability(items);
 
@@ -45,13 +49,13 @@ export class ItemService {
   ): Promise<ItemDto> {
     const item = await this.riotRepository.getItemDetails(language, itemId);
 
-    const newestPatch = await this.httpRiotService.getNewestPatch();
+    const newestPatch = await this.patchVersionService.getNewest();
 
     if (item.version !== newestPatch) {
       try {
         await this.updateItemsData(language);
       } catch (error) {
-        console.error(error);
+        throw error;
       }
     }
     return item;

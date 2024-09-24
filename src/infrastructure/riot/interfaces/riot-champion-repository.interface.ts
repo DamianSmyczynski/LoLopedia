@@ -1,4 +1,4 @@
-import { ChampionDto } from 'src/champions/champion.dto';
+import { ChampionDto } from '../../../champions/champion.dto';
 
 export interface RiotChampionRepositoryInterface {
   getAllChampions(language: string);

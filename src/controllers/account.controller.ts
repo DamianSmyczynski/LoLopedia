@@ -1,10 +1,11 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { AccountDto } from 'src/accounts/dto/account.dto';
-import { ErrorMapper } from 'src/decorators/error-mapper.decorator';
-import { ReloadStatus } from 'src/reload-status.type';
-import { AccountService } from 'src/services/account/account.service';
+import { AccountDto } from '../accounts/dto/account.dto';
+import { ErrorMapper } from '../decorators/error-mapper.decorator';
+import { InvalidGameNameStructureError } from '../errors/invalid-game-name.error';
+import { ReloadStatus } from '../reload-status.type';
+import { AccountService } from '../services/account/account.service';
 
-@Controller('api/account')
+@Controller('accounts')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
@@ -14,6 +15,9 @@ export class AccountController {
     @Param('region') region: string,
     @Param('gameNameTagLine') gameNameTagLine: string,
   ): Promise<AccountDto> {
+    if (!gameNameTagLine.includes('-')) {
+      throw new InvalidGameNameStructureError();
+    }
     const [gameName, tagLine] = gameNameTagLine.split('-');
     return this.accountService.getDetails(region, gameName, tagLine);
   }
@@ -24,6 +28,9 @@ export class AccountController {
     @Param('region') region: string,
     @Param('gameNameTagLine') gameNameTagLine: string,
   ): Promise<ReloadStatus> {
+    if (!gameNameTagLine.includes('-')) {
+      throw new InvalidGameNameStructureError();
+    }
     const [gameName, tagLine] = gameNameTagLine.split('-');
     return this.accountService.reloadDetails(region, gameName, tagLine);
   }

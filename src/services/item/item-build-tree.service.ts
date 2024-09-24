@@ -1,5 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
-import { ItemDto } from 'src/items/item.dto';
+import { ItemDto } from '../../items/item.dto';
 import { ItemService } from './item.service';
 
 @Injectable()

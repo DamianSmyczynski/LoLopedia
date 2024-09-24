@@ -1,5 +1,5 @@
-import { ItemDto } from 'src/items/item.dto';
-import { ItemAvailabilityExceptions } from 'src/item-availability-exceptions';
+import { ItemDto } from '../../items/item.dto';
+import { ItemAvailabilityExceptions } from '../../item-availability-exceptions';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
@@ -16,9 +16,15 @@ export class ItemFilterService {
 
     const availableItems = items
       .filter((item) => item.inStore)
-      .filter((item) => item.id.length <= 5 && item.maps['11'] === true);
+      .filter(
+        (item) =>
+          (item.id.length <= 5 && item.maps['11'] === true) ||
+          item.maps['30'] === true,
+      );
 
-    return this.filterItemIntoList(availableItems);
+    const evolvedItems = items.filter((item) => item.specialRecipe);
+
+    return this.filterItemIntoList([...availableItems, ...evolvedItems]);
   }
 
   private filterItemIntoList(items: ItemDto[]): ItemDto[] {

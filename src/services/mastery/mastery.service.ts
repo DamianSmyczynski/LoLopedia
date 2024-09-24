@@ -1,18 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { AppSymbol } from 'src/app.symbol';
 import 'dotenv/config';
-import { HttpRiotService } from 'src/infrastructure/riot/http-riot.service';
-import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
-import { RiotChampionRepositoryInterface } from 'src/infrastructure/riot/interfaces/riot-champion-repository.interface';
-import { BasicMasteryDto } from 'src/masteries/dto/basic-mastery-data.dto';
-import { HttpRiotMasteryResponseToBasicMasteryDataMapper } from 'src/infrastructure/riot/mappers/http-riot-mastery-response-to-basic-mastery-data.mapper';
+import { Inject, Injectable } from '@nestjs/common';
+import { HttpRiotService } from '../../infrastructure/riot/http-riot.service';
+import { HttpRiotMasteryResponseToBasicMasteryDataMapper } from '../../infrastructure/riot/mappers/mastery';
 
 @Injectable()
 export class MasteryService {
   constructor(
-    @Inject(AppSymbol.RiotChampionRepository)
-    private readonly riotRepository: RiotChampionRepositoryInterface,
+    @Inject()
     private readonly httpRiotService: HttpRiotService,
+    private readonly httpRiotMasteryResponseToBasicMasteryDataMapper: HttpRiotMasteryResponseToBasicMasteryDataMapper,
   ) {}
 
   public async getTopMasteries(
@@ -27,10 +23,9 @@ export class MasteryService {
 
     const mappedTopMasteries = Promise.all(
       topMasteries.map((mastery) =>
-        HttpRiotMasteryResponseToBasicMasteryDataMapper.map(
+        this.httpRiotMasteryResponseToBasicMasteryDataMapper.map(
           language,
           mastery,
-          this.riotRepository,
         ),
       ),
     );

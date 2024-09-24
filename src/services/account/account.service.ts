@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AppSymbol } from 'src/app.symbol';
+import { AppSymbol } from '../../app.symbol';
 import 'dotenv/config';
-import { HttpRiotService } from 'src/infrastructure/riot/http-riot.service';
-import { RiotAccountRepositoryInterface } from 'src/infrastructure/riot/interfaces/riot-account-repository.interface';
-import { AccountDto } from 'src/accounts/dto/account.dto';
-import { ReloadStatus } from 'src/reload-status.type';
+import { HttpRiotService } from '../../infrastructure/riot/http-riot.service';
+import { RiotAccountRepositoryInterface } from '../../infrastructure/riot/interfaces/riot-account-repository.interface';
+import { AccountDto } from '../../accounts/dto/account.dto';
+import { ReloadStatus } from '../../reload-status.type';
 
 @Injectable()
 export class AccountService {
@@ -21,29 +21,13 @@ export class AccountService {
     gameName: string,
     tagLine: string,
   ): Promise<AccountDto> {
-    try {
-      const account = await this.riotRepository.getDetails(
-        region,
-        gameName,
-        tagLine,
-      );
+    const account = await this.riotRepository.getDetails(
+      region,
+      gameName,
+      tagLine,
+    );
 
-      return account;
-    } catch (error) {
-      const accountDetails = await this.httpRiotService.getAccount(
-        region,
-        gameName,
-        tagLine,
-      );
-
-      try {
-        await this.riotRepository.save(accountDetails);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        return accountDetails;
-      }
-    }
+    return account;
   }
 
   public async reloadDetails(
@@ -74,7 +58,7 @@ export class AccountService {
           await this.riotRepository.save(actualAccountDetails);
           return { status: 'reloaded' };
         } catch (error) {
-          console.error(error);
+          throw error;
         }
       } else {
         return {
@@ -86,7 +70,7 @@ export class AccountService {
         };
       }
     } catch (error) {
-      console.error(error);
+      throw error;
     }
   }
 

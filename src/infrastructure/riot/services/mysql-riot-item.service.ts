@@ -1,13 +1,15 @@
-import { ItemEntity } from 'src/items/item.entity';
+import { ItemEntity } from '../../../items/item.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BasicItemDto, ItemDto } from 'src/items/item.dto';
+import { BasicItemDto, ItemDto } from '../../../items/item.dto';
 import { RiotItemRepositoryInterface } from '../interfaces/riot-item-repository.interface';
-import { ItemEntityToItemDtoMapper } from 'src/mappers/item/item-entity-to-item-dto.mapper';
-import { ItemDtoToItemEntityMapper } from 'src/mappers/item/item-dto-to-item-entity.mapper';
-import { ItemEntityToBasicItemDtoMapper } from 'src/mappers/item/item-entity-to-basic-item-dto.mapper';
-import { ItemNotFoundError } from 'src/errors/item-not-found.error';
+import { ItemNotFoundError } from '../../../errors/item-not-found.error';
+import {
+  ItemEntityToBasicItemDtoMapper,
+  ItemEntityToItemDtoMapper,
+  ItemDtoToItemEntityMapper,
+} from '../mappers/item';
 
 @Injectable()
 export class MySqlRiotItemService implements RiotItemRepositoryInterface {
@@ -30,6 +32,9 @@ export class MySqlRiotItemService implements RiotItemRepositoryInterface {
     language: string,
     itemId: string,
   ): Promise<ItemDto> {
+    if (+itemId === 0) {
+      return null;
+    }
     const item: ItemEntity = await this.itemRepository.findOneBy({
       id: itemId,
       language: language,

@@ -1,8 +1,9 @@
 import { Controller, Post, Param, Get } from '@nestjs/common';
-import { ItemDto } from 'src/items/item.dto';
-import { ItemService } from 'src/services/item/item.service';
+import { ErrorMapper } from '../decorators/error-mapper.decorator';
+import { ItemDto } from '../items/item.dto';
+import { ItemService } from '../services/item/item.service';
 
-@Controller('api/:language/items')
+@Controller(':language/items')
 export class ItemController {
   constructor(private readonly itemsService: ItemService) {}
 
@@ -17,6 +18,7 @@ export class ItemController {
   }
 
   @Get(':item')
+  @ErrorMapper()
   async getItemDetails(
     @Param('language') language: string,
     @Param('item') itemId: string,

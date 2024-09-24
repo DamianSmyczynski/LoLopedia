@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ItemDto, ItemStat } from 'src/items/item.dto';
+import { ItemDto, ItemStat } from '../../items/item.dto';
 
 @Injectable()
 export class ItemStatsService {

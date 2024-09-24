@@ -1,18 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { RiotAccountRepositoryInterface } from '../interfaces/riot-account-repository.interface';
-import { AccountDto } from 'src/accounts/dto/account.dto';
-import { AccountEntity } from 'src/accounts/account.entity';
+import { AccountDto } from '../../../accounts/dto/account.dto';
+import { AccountEntity } from '../../../accounts/account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AccountNotFoundError } from 'src/errors/account-not-found.error';
-import { AccountEntityToAccountDtoMapper } from 'src/mappers/account/account-entity-to-account-dto.mapper';
-import { AccountDtoToAccountEntityMapper } from 'src/mappers/account/account-dto-to-account-entity.mapper';
+import { HttpRiotService } from '../http-riot.service';
+import {
+  AccountDtoToAccountEntityMapper,
+  AccountEntityToAccountDtoMapper,
+} from '../mappers/account';
 
 @Injectable()
 export class MySqlRiotAccountService implements RiotAccountRepositoryInterface {
   constructor(
     @InjectRepository(AccountEntity)
     private readonly accountRepository: Repository<AccountEntity>,
+    private readonly httpRiotService: HttpRiotService,
   ) {}
 
   public async getDetails(
@@ -20,19 +23,25 @@ export class MySqlRiotAccountService implements RiotAccountRepositoryInterface {
     gameName: string,
     tagLine: string,
   ): Promise<AccountDto> {
-    const account: AccountEntity = await this.accountRepository.findOneBy({
+    let account: AccountEntity = await this.accountRepository.findOneBy({
       region: region,
       simplified_game_name: gameName,
       simplified_tag_line: tagLine,
     });
 
     if (!account) {
-      throw new AccountNotFoundError(gameName);
+      const accountDetails = await this.httpRiotService.getAccount(
+        region,
+        gameName,
+        tagLine,
+      );
+
+      account = AccountDtoToAccountEntityMapper.map(accountDetails);
+
+      await this.save(accountDetails);
+      return accountDetails;
     }
-
-    const accountDetails = AccountEntityToAccountDtoMapper.map(account);
-
-    return accountDetails;
+    return AccountEntityToAccountDtoMapper.map(account);
   }
 
   public async save(account: AccountDto) {

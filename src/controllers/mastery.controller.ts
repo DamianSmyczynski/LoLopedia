@@ -1,9 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ErrorMapper } from 'src/decorators/error-mapper.decorator';
-import { HttpRiotService } from 'src/infrastructure/riot/http-riot.service';
-import { MasteryService } from 'src/services/mastery/mastery.service';
+import { ErrorMapper } from '../decorators/error-mapper.decorator';
+import { MasteryService } from '../services/mastery/mastery.service';
 
-@Controller('api/:language/mastery')
+@Controller(':language/mastery')
 export class MasteryController {
   constructor(private readonly masteryService: MasteryService) {}
 

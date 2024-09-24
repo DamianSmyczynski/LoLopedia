@@ -1,6 +1,6 @@
-import { ItemDto } from 'src/items/item.dto';
-import { ItemCategory } from 'src/item-categories-enum';
-import { ItemsCategoryExceptions } from 'src/items-category-exceptions';
+import { ItemDto } from '../../items/item.dto';
+import { ItemCategory } from '../../item-categories-enum';
+import { ItemsCategoryExceptions } from '../../items-category-exceptions';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

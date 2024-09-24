@@ -1,9 +1,13 @@
 import { Controller, Get, Param, Post } from '@nestjs/common';
-import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
-import { ErrorMapper } from 'src/decorators/error-mapper.decorator';
-import { ChampionsService } from 'src/services/champion/champion.service';
+import {
+  BasicChampionDto,
+  ChampionDto,
+  ChampionSpell,
+} from '../champions/champion.dto';
+import { ErrorMapper } from '../decorators/error-mapper.decorator';
+import { ChampionsService } from '../services/champion/champion.service';
 
-@Controller('api/:language/champions')
+@Controller(':language/champions')
 export class ChampionController {
   constructor(private readonly championsService: ChampionsService) {}
 
@@ -29,5 +33,19 @@ export class ChampionController {
       language,
       championName,
     );
+  }
+
+  @Get(':champion/spells')
+  @ErrorMapper()
+  async getChampionSpellsByName(
+    @Param('language') language: string,
+    @Param('champion') championName: string,
+  ): Promise<ChampionSpell[]> {
+    const championDetails =
+      await this.championsService.getChampionDetailsByName(
+        language,
+        championName,
+      );
+    return championDetails.spells;
   }
 }

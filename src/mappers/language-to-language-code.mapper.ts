@@ -1,4 +1,4 @@
-import { LanguageSymbol } from 'src/language-symbol.enum';
+import { LanguageSymbol } from '../language-symbol.enum';
 
 export class LanguageToLanguageCodeMapper {
   public static map(language: string): string {

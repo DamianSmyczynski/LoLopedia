@@ -1,4 +1,4 @@
-import { ServersList } from 'src/servers-list';
+import { ServersList } from '../servers-list';
 
 export class ServerNameToServerCodeMapper {
   public static map(serverName: string): string {

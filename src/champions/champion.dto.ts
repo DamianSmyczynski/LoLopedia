@@ -1,4 +1,4 @@
-import { Image } from 'src/image.type';
+import { Image } from '../image.type';
 
 export type BasicChampionDto = {
   id: string;

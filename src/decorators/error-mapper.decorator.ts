@@ -9,7 +9,7 @@ export const ErrorMapper = () => {
     const originalMethod = descriptor.value;
     descriptor.value = async function (...args) {
       try {
-        const result = originalMethod.apply(this, args);
+        const result = await originalMethod.apply(this, args);
         return result;
       } catch (error) {
         ErrorToApiErrorMapper.map(error);

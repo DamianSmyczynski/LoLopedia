@@ -1,4 +1,4 @@
-import { Image } from 'src/image.type';
+import { Image } from '../image.type';
 
 export type BasicItemDto = {
   version: string;
@@ -21,6 +21,7 @@ export type ItemDto = BasicItemDto & {
   stats: ItemStat[];
   from?: string[];
   into?: string[];
+  specialRecipe?: number;
   requiredChampion?: string;
 };
 

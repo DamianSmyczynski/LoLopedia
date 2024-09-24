@@ -1,4 +1,4 @@
-import { ServersList } from 'src/servers-list';
+import { ServersList } from '../servers-list';
 
 export class ServerNameToRegionNameMapper {
   public static map(serverName: string): string {

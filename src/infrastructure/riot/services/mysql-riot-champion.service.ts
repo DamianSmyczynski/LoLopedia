@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { RiotChampionRepositoryInterface } from '../interfaces/riot-champion-repository.interface';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ChampionEntity } from 'src/champions/champion.entity';
+import { ChampionEntity } from '../../../champions/champion.entity';
 import { Repository } from 'typeorm';
-import { BasicChampionDto, ChampionDto } from 'src/champions/champion.dto';
-import { ChampionEntityToBasicChampionDtoMapper } from 'src/mappers/champion/champion-entity-to-basic-champion-dto.mapper';
-import { ChampionEntityToChampionDtoMapper } from 'src/mappers/champion/champion-entity-to-champion-dto.mapper';
-import { ChampionDtoToChampionEntityMapper } from 'src/mappers/item/champion-dto-to-champion-entity.mapper';
-import { ChampionNotFoundError } from 'src/errors/champion-not-found.error';
+import { BasicChampionDto, ChampionDto } from '../../../champions/champion.dto';
+import { ChampionNotFoundError } from '../../../errors/champion-not-found.error';
+import {
+  ChampionEntityToBasicChampionDtoMapper,
+  ChampionEntityToChampionDtoMapper,
+  ChampionDtoToChampionEntityMapper,
+} from '../mappers/champion';
 
 @Injectable()
 export class MySqlRiotChampionService

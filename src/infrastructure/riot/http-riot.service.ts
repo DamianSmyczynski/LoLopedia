@@ -1,107 +1,129 @@
 import { HttpService } from '@nestjs/axios';
-import { lastValueFrom, min } from 'rxjs';
-import { ChampionDto } from 'src/champions/champion.dto';
+import { lastValueFrom } from 'rxjs';
+import { ChampionDto } from '../../champions/champion.dto';
 import 'dotenv/config';
-import { Injectable } from '@nestjs/common';
-import { LanguageToLanguageCodeMapper } from 'src/mappers/language-to-language-code.mapper';
-import { ItemDto } from 'src/items/item.dto';
-import { HttpRiotChampionResponseToChampionDtoMapper } from './mappers/http-riot-champion-response-to-champion-dto.mapper';
-import { HttpRiotItemResponseToItemDtoMapper } from './mappers/http-riot-item-response-to-item-entity.mapper';
-import { HttpRiotAccountResponseToAccountDtoMapper } from './mappers/http-riot-account-response-to-account-dto.mapper';
-import { AccountNotFoundError } from 'src/errors/account-not-found.error';
-import { GameDto } from 'src/games/dto/game.dto';
-import { GameToBasicGameDetailsMapper } from './mappers/game-to-basic-game-details.mapper';
-import { BasicGameDto } from 'src/games/dto/basic-game.dto';
-import { ServerNameToServerCodeMapper } from 'src/mappers/server-name-to-server-code.mapper';
-import { ServerNameToRegionNameMapper } from 'src/mappers/server-name-to-region-name.mapper';
-import { RankDto } from 'src/accounts/dto/rank.dto';
-import { AccountDto } from 'src/accounts/dto/account.dto';
-import { queueTypes } from 'src/queue-type';
-import { StartValueOutOfRange } from 'src/errors/starting-value-out-of-range.error';
-import { GamesCountIsTooHighError } from 'src/errors/games-count-is-too-hight.error';
-import { GameNotFoundError } from 'src/errors/game-not-found.error';
-import { MasteryDto } from 'src/masteries/dto/mastery-champion-data.dto';
-import { HttpRiotMasteryResponseToBasicMasteryDataMapper } from './mappers/http-riot-mastery-response-to-basic-mastery-data.mapper';
+import { HttpStatus, Injectable } from '@nestjs/common';
+import { LanguageToLanguageCodeMapper } from '../../mappers/language-to-language-code.mapper';
+import { ItemDto } from '../../items/item.dto';
+import { AccountNotFoundError } from '../../errors/account-not-found.error';
+import { RankDto } from '../../accounts/dto/rank.dto';
+import { AccountDto } from '../../accounts/dto/account.dto';
+import { queueTypes } from '../../queue-type';
+import { GameNotFoundError } from '../../errors/game-not-found.error';
+import { MasteryDto } from '../../masteries/dto/mastery-champion-data.dto';
+import { AugmentDto } from '../../augments/augment.dto';
+import { RuneDto } from '../../runes/rune.dto';
+import { SummonerSpellDto } from '../../summoner-spells/summoner-spell.dto';
+import { ServerNameToRegionNameMapper } from '../../mappers/server-name-to-region-name.mapper';
+import { ServerNameToServerCodeMapper } from '../../mappers/server-name-to-server-code.mapper';
+import { HttpRiotAccountResponseToAccountDtoMapper } from './mappers/account';
+import { HttpRiotAugmentResponseToAugmentDtoMapper } from './mappers/augment';
+import { HttpRiotChampionResponseToChampionDtoMapper } from './mappers/champion';
+import { HttpRiotItemResponseToItemDtoMapper } from './mappers/item';
+import { HttpRiotRuneResponseToRuneDtoMapper } from './mappers/rune';
+import { HttpRiotSummonerSpellResponseToSummonerSpellDtoMapper } from './mappers/summoner-spell';
+import {
+  GameToBasicGameDetailsMapper,
+  GameToDetailedGameMapper,
+  GameToGameTimelineMapper,
+} from './mappers/game';
+import { BasicGameDto } from '../../games/dto/basic-game/basic-game.dto';
+import { DetailedGameDto } from '../../games/dto/detailed-game/detailed-game.dto';
+import { GameTimelineDto } from '../../games/dto/timeline/game-timeline.dto';
 
+const getOptions = () => {
+  return {
+    headers: {
+      'X-Riot-Token': process.env.RIOT_TOKEN,
+    },
+  };
+};
 @Injectable()
 export class HttpRiotService {
   private url;
 
-  constructor(private readonly httpService: HttpService) {
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly gameToBasicGameDetailsMapper: GameToBasicGameDetailsMapper,
+    private readonly gameToDetailedGameMapper: GameToDetailedGameMapper,
+  ) {
     this.url = process.env.RIOT_API_URL;
   }
 
-  public async getNewestPatch(): Promise<string> {
+  public async getAllAugments(
+    language: string,
+    patchVersion: string,
+  ): Promise<AugmentDto[]> {
+    const languageCode = LanguageToLanguageCodeMapper.map(language);
+
+    const parts = patchVersion.split('.');
+
+    const simplifiedPatchVersion = `${parts[0]}.${parts[1]}`;
+
     const response = await lastValueFrom(
-      this.httpService.get(`${this.url}/api/versions.json`),
+      this.httpService.get(
+        `https://raw.communitydragon.org/${simplifiedPatchVersion}/cdragon/arena/${languageCode.toLowerCase()}.json`,
+      ),
     );
 
-    const newestPatch = JSON.stringify(response.data[0]);
-    return newestPatch.substring(1, newestPatch.length - 1);
+    const augments: AugmentDto[] = [];
+
+    for (const [key, value] of Object.entries(response.data.augments)) {
+      augments.push(
+        HttpRiotAugmentResponseToAugmentDtoMapper.map(language, value),
+      );
+    }
+    return augments;
   }
 
-  public async getAllChampions(language: string): Promise<ChampionDto[]> {
-    const newestPatch = await this.getNewestPatch();
-
+  public async getAllChampions(
+    language: string,
+    patchVersion: string,
+  ): Promise<ChampionDto[]> {
     const languageCode = LanguageToLanguageCodeMapper.map(language);
 
     const response = await lastValueFrom(
       this.httpService.get(
-        `${this.url}/cdn/${newestPatch}/data/${languageCode}/champion.json`,
-        {
-          headers: {
-            'X-Riot-Token': process.env.RIOT_TOKEN,
-          },
-        },
+        `${this.url}/cdn/${patchVersion}/data/${languageCode}/champion.json`,
       ),
     );
 
     return response.data.data;
   }
 
-  public async getChampionDetailsByName(
+  public async getAllSummonerSpells(
     language: string,
-    championName: string,
-  ): Promise<ChampionDto> {
-    const newestPatch = await this.getNewestPatch();
-
+    patchVersion: string,
+  ): Promise<SummonerSpellDto[]> {
     const languageCode = LanguageToLanguageCodeMapper.map(language);
 
     const response = await lastValueFrom(
       this.httpService.get(
-        `${this.url}/cdn/${newestPatch}/data/${languageCode}/champion/${championName}.json`,
-        {
-          headers: {
-            'X-Riot-Token': process.env.RIOT_TOKEN,
-          },
-        },
+        `${this.url}/cdn/${patchVersion}/data/${languageCode}/summoner.json`,
       ),
     );
 
-    const responseData = response.data;
-
-    const champion = responseData.data[Object.keys(responseData.data)[0]];
-
-    return HttpRiotChampionResponseToChampionDtoMapper.map(
-      language,
-      champion,
-      responseData.version,
-    );
+    const summonerSpells: SummonerSpellDto[] = [];
+    for (const [key, value] of Object.entries(response.data.data)) {
+      summonerSpells.push(
+        HttpRiotSummonerSpellResponseToSummonerSpellDtoMapper.map(
+          language,
+          value,
+        ),
+      );
+    }
+    return summonerSpells;
   }
 
-  public async getAllItems(language: string): Promise<ItemDto[]> {
-    const newestPatch = await this.getNewestPatch();
-
+  public async getAllItems(
+    language: string,
+    patchVersion: string,
+  ): Promise<ItemDto[]> {
     const languageCode = LanguageToLanguageCodeMapper.map(language);
 
     const response = await lastValueFrom(
       this.httpService.get(
-        `${this.url}/cdn/${newestPatch}/data/${languageCode}/item.json`,
-        {
-          headers: {
-            'X-Riot-Token': process.env.RIOT_TOKEN,
-          },
-        },
+        `${this.url}/cdn/${patchVersion}/data/${languageCode}/item.json`,
       ),
     );
 
@@ -117,6 +139,38 @@ export class HttpRiotService {
     return items;
   }
 
+  public async getAllRunes(
+    language: string,
+    patchVersion: string,
+  ): Promise<RuneDto[]> {
+    const languageCode = LanguageToLanguageCodeMapper.map(language);
+
+    const response = await lastValueFrom(
+      this.httpService.get(
+        `${this.url}/cdn/${patchVersion}/data/${languageCode}/runesReforged.json`,
+      ),
+    );
+
+    const majorRunes: RuneDto[] = [];
+    for (const [key, value] of Object.entries(response.data)) {
+      majorRunes.push(HttpRiotRuneResponseToRuneDtoMapper.map(language, value));
+    }
+
+    const runes: RuneDto[] = [];
+    for (const [key, value] of Object.entries(response.data)) {
+      const slots = (value as any).slots;
+      const allRunes = [];
+      slots.forEach((slot) => {
+        allRunes.push(...slot.runes);
+      });
+      allRunes.forEach((rune) => {
+        runes.push(HttpRiotRuneResponseToRuneDtoMapper.map(language, rune));
+      });
+    }
+
+    return [...majorRunes, ...runes];
+  }
+
   public async getAccount(
     region: string,
     gameName: string,
@@ -126,11 +180,7 @@ export class HttpRiotService {
       const response = await lastValueFrom(
         this.httpService.get(
           `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/${gameName}/${tagLine}`,
-          {
-            headers: {
-              'X-Riot-Token': process.env.RIOT_TOKEN,
-            },
-          },
+          getOptions(),
         ),
       );
 
@@ -151,51 +201,164 @@ export class HttpRiotService {
         region,
       );
     } catch (error) {
-      throw new AccountNotFoundError(gameName);
+      if (error.response.status === HttpStatus.NOT_FOUND) {
+        throw new AccountNotFoundError(gameName);
+      }
+      throw error;
     }
   }
 
-  public async getBasicGamesList(
-    gamesCount: number,
-    gameType: string,
-    puuid: string,
-    region: string,
-    start: number,
-  ): Promise<BasicGameDto[]> {
-    const allSummonerSpells = await this.getAllSummonerSpells();
-    const gamesIdsList = await this.getGameIdsList(
-      gamesCount,
-      gameType,
-      puuid,
-      region,
-      start,
-    );
-    const basicGamesList = gamesIdsList.map((id) =>
-      this.getGameDetails(region, id),
+  public async getChampionDetailsByName(
+    language: string,
+    championName: string,
+    patchVersion: string,
+  ): Promise<ChampionDto> {
+    const languageCode = LanguageToLanguageCodeMapper.map(language);
+
+    const response = await lastValueFrom(
+      this.httpService.get(
+        `${this.url}/cdn/${patchVersion}/data/${languageCode}/champion/${championName}.json`,
+      ),
     );
 
-    const detailedGamesResult: GameDto[] = await Promise.all(basicGamesList);
+    const responseData = response.data;
 
-    return detailedGamesResult.map((game) =>
-      GameToBasicGameDetailsMapper.map(region, game, puuid, allSummonerSpells),
+    const champion = responseData.data[Object.keys(responseData.data)[0]];
+
+    return HttpRiotChampionResponseToChampionDtoMapper.map(
+      language,
+      champion,
+      responseData.version,
     );
   }
 
-  public async getGameDetails(region: string, gameId: string) {
+  public async getGameDetails(
+    language: string,
+    region: string,
+    gameId: string,
+    puuid?: string,
+  ): Promise<{
+    basicGameDetails: BasicGameDto;
+    gameDetails: DetailedGameDto;
+    gameTimeline: GameTimelineDto;
+  }> {
+    if (puuid) {
+      try {
+        const response = await lastValueFrom(
+          this.httpService.get(
+            `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/lol/match/v5/matches/${gameId}`,
+            getOptions(),
+          ),
+        );
+
+        const basicGameDetails = await this.gameToBasicGameDetailsMapper.map(
+          region,
+          language,
+          response.data,
+          puuid,
+        );
+
+        return {
+          basicGameDetails: basicGameDetails,
+          gameDetails: null,
+          gameTimeline: null,
+        };
+      } catch (error) {
+        if (error.response?.status === HttpStatus.NOT_FOUND) {
+          throw new GameNotFoundError(gameId);
+        }
+        throw error;
+      }
+    }
+    try {
+      const [gameDetailsResponse, gameTimelineReponse] = await Promise.all([
+        lastValueFrom(
+          this.httpService.get(
+            `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/lol/match/v5/matches/${gameId}`,
+            getOptions(),
+          ),
+        ),
+        lastValueFrom(
+          this.httpService.get(
+            `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/lol/match/v5/matches/${gameId}/timeline`,
+            getOptions(),
+          ),
+        ),
+      ]);
+
+      const gameTimeline = gameTimelineReponse.data;
+      const gameDetails = await this.gameToDetailedGameMapper.map(
+        language,
+        gameDetailsResponse.data,
+        gameTimeline,
+      );
+      return {
+        basicGameDetails: null,
+        gameDetails: gameDetails,
+        gameTimeline: gameTimeline,
+      };
+    } catch (error) {
+      if (error.response?.status === HttpStatus.NOT_FOUND) {
+        throw new GameNotFoundError(gameId);
+      }
+      throw error;
+    }
+  }
+
+  public async getGameIdsList(
+    puuid: string,
+    region: string,
+    gamesCount?: number,
+    gameType?: string,
+    start?: number,
+  ): Promise<string[]> {
+    let gameListUrl = `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?`;
+
+    if (start) {
+      gameListUrl += `&start=${start}`;
+    }
+
+    if (gamesCount) {
+      gameListUrl += `&count=${gamesCount}`;
+    }
+
+    if (gameType) {
+      const gameTypeId = queueTypes.find((type) => type.name === gameType).id;
+      gameListUrl += `&queue=${gameTypeId}`;
+    }
+
     try {
       const response = await lastValueFrom(
-        this.httpService.get(
-          `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/lol/match/v5/matches/${gameId}`,
-          {
-            headers: {
-              'X-Riot-Token': process.env.RIOT_TOKEN,
-            },
-          },
-        ),
+        this.httpService.get(gameListUrl, getOptions()),
       );
+
       return response.data;
     } catch (error) {
-      throw new GameNotFoundError(gameId);
+      throw new AccountNotFoundError(puuid);
+    }
+  }
+
+  public async getNewestGameIdsList(
+    puuid: string,
+    region: string,
+    startTime: number,
+    gameType?: string,
+  ): Promise<string[]> {
+    let gameListUrl = `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?count=10&startTime=${startTime}`;
+
+    if (gameType) {
+      const gameTypeId = queueTypes.find((type) => type.name === gameType).id;
+      gameListUrl += `&queue=${gameTypeId}`;
+    }
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService.get(gameListUrl, getOptions()),
+      );
+
+      return response.data;
+    } catch (error) {
+      throw new AccountNotFoundError(puuid);
     }
   }
 
@@ -206,20 +369,13 @@ export class HttpRiotService {
       const response = await lastValueFrom(
         this.httpService.get(
           `https://${ServerNameToServerCodeMapper.map(region)}.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/${puuid}/top?count=${topCount}`,
-          {
-            headers: {
-              'X-Riot-Token': process.env.RIOT_TOKEN,
-            },
-          },
+          getOptions(),
         ),
       );
 
       const topMasteries: MasteryDto[] = response.data;
 
       return topMasteries;
-      // return topMasteries.map((mastery) =>
-      //   HttpRiotMasteryResponseToBasicMasteryDataMapper.map(mastery),
-      // );
     } catch (error) {
       throw new AccountNotFoundError(puuid);
     }
@@ -237,11 +393,7 @@ export class HttpRiotService {
       const response = await lastValueFrom(
         this.httpService.get(
           `https://${ServerNameToServerCodeMapper.map(region)}.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/${puuid}`,
-          {
-            headers: {
-              'X-Riot-Token': process.env.RIOT_TOKEN,
-            },
-          },
+          getOptions(),
         ),
       );
       return {
@@ -262,11 +414,7 @@ export class HttpRiotService {
       const response = await lastValueFrom(
         this.httpService.get(
           `https://${ServerNameToServerCodeMapper.map(region)}.api.riotgames.com/lol/league/v4/entries/by-summoner/${summonerId}`,
-          {
-            headers: {
-              'X-Riot-Token': process.env.RIOT_TOKEN,
-            },
-          },
+          getOptions(),
         ),
       );
 
@@ -281,67 +429,5 @@ export class HttpRiotService {
     } catch (error) {
       throw new AccountNotFoundError(summonerId);
     }
-  }
-
-  private async getGameIdsList(
-    gamesCount: number,
-    gameType: string,
-    puuid: string,
-    region: string,
-    start: number,
-  ): Promise<string[]> {
-    const minValue = 0;
-    const maxValue = 20;
-    const maxGamesCount = 10;
-
-    if (start < minValue || start > maxValue) {
-      throw new StartValueOutOfRange(minValue, maxValue);
-    }
-
-    if (gamesCount > maxGamesCount) {
-      throw new GamesCountIsTooHighError(gamesCount, maxGamesCount);
-    }
-
-    let gameListUrl = `https://${ServerNameToRegionNameMapper.map(region)}.api.riotgames.com/lol/match/v5/matches/by-puuid/${puuid}/ids?start=${start}&count=${gamesCount}`;
-
-    if (gameType) {
-      const gameTypeId = queueTypes.find((type) => type.name === gameType).id;
-      gameListUrl += `&queue=${gameTypeId}`;
-    }
-
-    try {
-      const response = await lastValueFrom(
-        this.httpService.get(gameListUrl, {
-          headers: {
-            'X-Riot-Token': process.env.RIOT_TOKEN,
-          },
-        }),
-      );
-
-      return response.data;
-    } catch (error) {
-      throw new AccountNotFoundError(puuid);
-    }
-  }
-
-  private async getAllSummonerSpells(): Promise<{ id: string; key: string }[]> {
-    const newestPatch = await this.getNewestPatch();
-    const response = await lastValueFrom(
-      this.httpService.get(
-        `${this.url}/cdn/${newestPatch}/data/en_US/summoner.json`,
-        {
-          headers: {
-            'X-Riot-Token': process.env.RIOT_TOKEN,
-          },
-        },
-      ),
-    );
-
-    const summonerSpellsIds: { id: string; key: string }[] = [];
-    for (const [key, value] of Object.entries(response.data.data)) {
-      const { id, key } = value as { id?: string; key?: string };
-      summonerSpellsIds.push({ id, key });
-    }
-    return summonerSpellsIds;
   }
 }

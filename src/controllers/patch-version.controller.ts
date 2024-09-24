@@ -1,12 +1,14 @@
 import { Controller, Get } from '@nestjs/common';
-import { HttpRiotService } from 'src/infrastructure/riot/http-riot.service';
+import { ErrorMapper } from '../decorators/error-mapper.decorator';
+import { PatchVersionService } from '../services/patch-version/patch-version.service';
 
-@Controller('api/patch-version')
+@Controller('patch-version')
 export class PatchVersionController {
-  constructor(private readonly httpRiotService: HttpRiotService) {}
+  constructor(private readonly patchVersionService: PatchVersionService) {}
 
   @Get('')
+  @ErrorMapper()
   async getNewestPatchVersion(): Promise<string> {
-    return this.httpRiotService.getNewestPatch();
+    return this.patchVersionService.getNewest();
   }
 }

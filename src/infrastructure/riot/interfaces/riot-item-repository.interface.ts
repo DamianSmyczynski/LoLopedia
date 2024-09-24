@@ -1,4 +1,4 @@
-import { ItemDto } from 'src/items/item.dto';
+import { ItemDto } from '../../../items/item.dto';
 
 export interface RiotItemRepositoryInterface {
   getAllItems(language: string);
