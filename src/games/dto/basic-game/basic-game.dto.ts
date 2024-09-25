@@ -4,6 +4,7 @@ import { MainParticipantDto } from './main-participant.dto';
 
 export type BasicGameDto = {
   matchId: string;
+  language: string;
   puuid: string;
   server: string;
   gameDate: Date;

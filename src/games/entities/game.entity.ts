@@ -9,6 +9,9 @@ export class GameEntity extends BaseEntity {
   match_id: string;
 
   @Column({ default: null })
+  language: string;
+
+  @Column({ default: null })
   puuid: string;
 
   @Column({ default: null })

@@ -5,6 +5,7 @@ export class BasicGameToGameEntityMapper {
   public static map(game: BasicGameDto): GameEntity {
     return GameEntity.create({
       match_id: game.matchId,
+      language: game.language,
       puuid: game.puuid,
       server: game.server,
       game_date: game.gameDate,

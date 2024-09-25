@@ -8,6 +8,7 @@ import { GamesCountIsTooHighError } from 'src/errors/games-count-is-too-hight.er
 import { AugmentNotFoundError } from 'src/errors/augment-not-found.error';
 import { RuneNotFoundError } from 'src/errors/rune-not-found.error';
 import { SummonerSpellNotFoundError } from 'src/errors/summoner-spell-not-found.error';
+import { RegionNotFoundError } from 'src/errors/region-not-found.error';
 
 export class ErrorToApiErrorMapper {
   public static map(error: any) {
@@ -16,6 +17,7 @@ export class ErrorToApiErrorMapper {
       case AugmentNotFoundError:
       case ChampionNotFoundError:
       case ItemNotFoundError:
+      case RegionNotFoundError:
       case RuneNotFoundError:
       case SummonerSpellNotFoundError:
         throw new HttpException(error.message, HttpStatus.NOT_FOUND);

@@ -46,6 +46,7 @@ export class GameToBasicGameDetailsMapper {
       GameToBasicGameDetailsMapper.extractTeamsKDA(game.info.participants);
 
     return {
+      language: language,
       puuid: puuid,
       server: region,
       gameDate: new Date(game.info.gameStartTimestamp),
