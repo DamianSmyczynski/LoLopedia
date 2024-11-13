@@ -1,5 +1,5 @@
 # LoLopedia
-Demo: https://riot.mat-kor.pl/
+Demo: https://lolopedia.mat-kor.pl/
 ## Tech Stack
   
 - **Backend**: 
